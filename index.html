@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Revista Flipbook</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Librerías externas -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4/turn.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Mi Revista</h1>
+    </header>
+
+    <main>
+        <div id="controls">
+            <button onclick="prevPage()">⏪ Anterior</button>
+            <button onclick="nextPage()">⏩ Siguiente</button>
+            <button onclick="zoomIn()">🔍 Zoom +</button>
+            <button onclick="zoomOut()">🔎 Zoom -</button>
+            <button onclick="toggleFullscreen()">🖥 Pantalla completa</button>
+        </div>
+
+        <div id="revista"></div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 - Revista Digital</p>
+    </footer>
+
+    <!-- Tu script -->
+    <script src="script.js"></script>
+</body>
+
+</html>
