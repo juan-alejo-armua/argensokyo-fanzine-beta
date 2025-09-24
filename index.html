@@ -3,39 +3,173 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Mi Revista Flipbook</title>
-    <link rel="stylesheet" href="css/style.css">
-
-    <!-- Librerías externas -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4/turn.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revista Digital Mejorada</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4/turn.min.css">
+    <style>
+        body {
+            margin: 0;
+            background: #222;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        #magazine {
+            background: #ccc;
+        }
+        
+        #magazine .page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #magazine .page img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background: #444;
+            color: white;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #666;
+        }
+        
+        #pageIndicator {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+    </style>
 </head>
 
 <body>
-    <header>
-        <h1>Mi Revista</h1>
-    </header>
 
-    <main>
-        <div id="controls">
-            <button onclick="prevPage()">⏪ Anterior</button>
-            <button onclick="nextPage()">⏩ Siguiente</button>
-            <button onclick="zoomIn()">🔍 Zoom +</button>
-            <button onclick="zoomOut()">🔎 Zoom -</button>
-            <button onclick="toggleFullscreen()">🖥 Pantalla completa</button>
-        </div>
+    <h1>Revista Digital Mejorada</h1>
 
-        <div id="revista"></div>
-    </main>
+    <div id="magazine"></div>
 
-    <footer>
-        <p>&copy; 2025 - Revista Digital</p>
-    </footer>
+    <div class="controls">
+        <button id="prev">⬅ Anterior</button>
+        <button id="next">Siguiente ➡</button>
+        <button id="toggle">Ver 1 / 2 páginas</button>
+    </div>
 
-    <!-- Tu script -->
-    <script src="script.js"></script>
+    <div id="pageIndicator">Página: 1</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4/turn.min.js"></script>
+    <script>
+        const totalPages = 196;
+        let displayMode = window.innerWidth < 768 ? "single" : "double";
+        let currentZoom = 1;
+
+        function loadMagazine() {
+            $('#magazine').turn('destroy').html('');
+            $('#magazine').turn({
+                width: window.innerWidth * 0.9,
+                height: window.innerHeight * 0.9,
+                autoCenter: true,
+                display: displayMode
+            });
+
+            for (let i = 1; i <= totalPages; i++) {
+                $('#magazine').turn('addPage', $('<div class="page"><img src="paginas/' + i + '.jpg" alt="Página ' + i + '"></div>'), i);
+            }
+
+            updatePageIndicator();
+        }
+
+        function updatePageIndicator() {
+            const currentPage = $('#magazine').turn('page');
+            $('#pageIndicator').text(`Página: ${currentPage}`);
+        }
+
+        function initZoom() {
+            $('#magazine').on('dblclick', '.page img', function() {
+                currentZoom = currentZoom === 1 ? 2 : 1; // alterna zoom
+                $(this).css('transform', `scale(${currentZoom})`);
+            });
+
+            let startDist = 0;
+            let initialZoom = 1;
+
+            $('#magazine').on('touchstart', '.page img', function(e) {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    startDist = Math.hypot(
+                        e.touches[0].pageX - e.touches[1].pageX,
+                        e.touches[0].pageY - e.touches[1].pageY
+                    );
+                    initialZoom = currentZoom;
+                }
+            });
+
+            $('#magazine').on('touchmove', '.page img', function(e) {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    let moveDist = Math.hypot(
+                        e.touches[0].pageX - e.touches[1].pageX,
+                        e.touches[0].pageY - e.touches[1].pageY
+                    );
+                    let zoomFactor = moveDist / startDist;
+                    currentZoom = initialZoom * zoomFactor;
+                    $(this).css('transform', `scale(${currentZoom})`);
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            loadMagazine();
+            initZoom();
+
+            $('#prev').click(() => {
+                $('#magazine').turn('previous');
+                updatePageIndicator();
+            });
+
+            $('#next').click(() => {
+                $('#magazine').turn('next');
+                updatePageIndicator();
+            });
+
+            $('#toggle').click(() => {
+                displayMode = displayMode === "double" ? "single" : "double";
+                loadMagazine();
+            });
+
+            $(window).resize(() => {
+                displayMode = window.innerWidth < 768 ? "single" : "double";
+                loadMagazine();
+            });
+        });
+    </script>
 </body>
 
 </html>
